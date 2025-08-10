@@ -2289,25 +2289,30 @@ function sections:dropdown(props)
 	size = math.clamp(size,1,max)
 	--
 	local optionsoutline = utility.new(
-		"ScrollingFrame",
-		{
-			BackgroundColor3 = Color3.fromRGB(56, 56, 56),
-			BorderColor3 = Color3.fromRGB(56, 56, 56),
-			BorderMode = "Inset",
-			BorderSizePixel = 1,
-			Size = UDim2.new(1,0,size,2),
-			Position = UDim2.new(0,0,0,0),
-			ClipsDescendants = true,
-			CanvasSize = UDim2.new(0,0,0,18*#options),
-			ScrollBarImageTransparency = 0.25,
-			ScrollBarImageColor3 = Color3.fromRGB(0,0,0),
-			ScrollBarThickness = 5,
-			VerticalScrollBarInset = "ScrollBar",
-			VerticalScrollBarPosition = "Right",
-			ZIndex = 5,
-			Parent = optionsholder
-		}
-	)
+    "ScrollingFrame",
+    {
+        BackgroundColor3 = Color3.fromRGB(56, 56, 56),
+        BorderColor3 = Color3.fromRGB(56, 56, 56),
+        BorderMode = "Inset",
+        BorderSizePixel = 1,
+        Size = UDim2.new(1,0,size,2),
+        Position = UDim2.new(0,0,0,0),
+        ClipsDescendants = true,
+        CanvasSize = UDim2.new(0,0,0,18*#options),
+        ScrollBarImageTransparency = 0.25,
+        ScrollBarImageColor3 = Color3.fromRGB(0,0,0),
+        ScrollBarThickness = 8, -- Increased thickness for better mobile touch
+        ScrollingEnabled = true, -- Explicitly enable scrolling
+        VerticalScrollBarInset = "ScrollBar",
+        VerticalScrollBarPosition = "Right",
+        ZIndex = 5,
+        Parent = optionsholder
+    }
+)
+
+-- Add this after creating the optionsoutline to enable touch scrolling:
+optionsoutline.TouchPan = Enum.TouchPanMode.Vertical
+optionsoutline.ScrollingDirection = Enum.ScrollingDirection.Y
 	--
 	utility.new(
 		"UIListLayout",
