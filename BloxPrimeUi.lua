@@ -1880,8 +1880,10 @@ function sections:slider(props)
     local measurement = props.measurement or props.Measurement or props.digit or props.Digit or props.calc or props.Calc or ""
     local callback = props.callback or props.callBack or props.CallBack or props.Callback or function()end
     def = math.clamp(def,min,max)
+    
     -- // variables
     local slider = {}
+    
     -- // main
     local sliderholder = utility.new(
         "Frame",
@@ -1891,7 +1893,7 @@ function sections:slider(props)
             Parent = self.content
         }
     )
-    --
+    
     local outline = utility.new(
         "Frame",
         {
@@ -1904,7 +1906,7 @@ function sections:slider(props)
             Parent = sliderholder
         }
     )
-    --
+    
     local outline2 = utility.new(
         "Frame",
         {
@@ -1915,8 +1917,8 @@ function sections:slider(props)
             Size = UDim2.new(1,0,1,0),
             Parent = outline
         }
-    )	
-    --
+    )
+    
     local value = utility.new(
         "TextLabel",
         {
@@ -1932,7 +1934,7 @@ function sections:slider(props)
             Parent = outline
         }
     )
-    --
+    
     local color = utility.new(
         "Frame",
         {
@@ -1942,7 +1944,7 @@ function sections:slider(props)
             Parent = outline2
         }
     )
-    --
+    
     utility.new(
         "UIGradient",
         {
@@ -1951,7 +1953,7 @@ function sections:slider(props)
             Parent = color
         }
     )
-    --
+    
     local slide = utility.new(
         "Frame",
         {
@@ -1963,7 +1965,7 @@ function sections:slider(props)
         }
     )
     table.insert(self.library.themeitems["accent"]["BackgroundColor3"],slide)
-    --
+    
     utility.new(
         "UIGradient",
         {
@@ -1972,7 +1974,7 @@ function sections:slider(props)
             Parent = slide
         }
     )
-    --
+    
     local sliderbutton = utility.new(
         "TextButton",
         {
@@ -1984,7 +1986,7 @@ function sections:slider(props)
             Parent = sliderholder
         }
     )
-    --
+    
     local title = utility.new(
         "TextLabel",
         {
@@ -2000,6 +2002,7 @@ function sections:slider(props)
             Parent = sliderholder
         }
     )
+    
     -- // slider tbl
     slider = {
         ["library"] = self.library,
@@ -2015,71 +2018,73 @@ function sections:slider(props)
         ["measurement"] = measurement,
         ["tick"] = ticking,
         ["rounding"] = rounding,
-        ["callback"] = callback
+        ["callback"] = callback,
+        ["activeTouch"] = nil  -- Track the active touch input
     }
     
     local function slide(input)
-        -- Only handle touch input if it's the initial touch or a move from the same touch
-        if input.UserInputType == Enum.UserInputType.Touch and (not slider.touchId or slider.touchId == input.UserInputState == Enum.UserInputState.Begin and input.UserInputType == Enum.UserInputType.Touch then
-            slider.touchId = input
+        -- Only process if this is our active touch or mouse input
+        if input.UserInputType == Enum.UserInputType.Touch and slider.activeTouch ~= input then
+            return
         end
         
-        -- Only process input if it's from the same touch or a mouse input
-        if (input.UserInputType == Enum.UserInputType.Touch and slider.touchId and input == slider.touchId) or input.UserInputType == Enum.UserInputType.MouseMovement then
-            local size = math.clamp(input.Position.X - slider.color.AbsolutePosition.X, 0, slider.color.AbsoluteSize.X)
-            local result = (slider.max - slider.min) / slider.color.AbsoluteSize.X * size + slider.min
-            
-            if slider.rounding then
-                local newres = math.floor(result)
-                value.Text = newres..slider.measurement.."/"..slider.max..slider.measurement
-                slider.current = newres
-                slider.callback(newres)
-                if slider.tick then
-                    slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * (slider.color.AbsoluteSize.X / (slider.max - slider.min) * (newres - slider.min)), 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
-                else
-                    slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * size, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
-                end
+        local size = math.clamp(input.Position.X - slider.color.AbsolutePosition.X, 0, slider.color.AbsoluteSize.X)
+        local result = (slider.max - slider.min) / slider.color.AbsoluteSize.X * size + slider.min
+        
+        if slider.rounding then
+            local newres = math.floor(result)
+            value.Text = newres..slider.measurement.."/"..slider.max..slider.measurement
+            slider.current = newres
+            slider.callback(newres)
+            if slider.tick then
+                slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * (slider.color.AbsoluteSize.X / (slider.max - slider.min) * (newres - slider.min)), 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
             else
-                local newres = utility.round(result, 2)
-                value.Text = newres..slider.measurement.."/"..slider.max..slider.measurement
-                slider.current = newres
-                slider.callback(newres)
-                if slider.tick then
-                    slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * (slider.color.AbsoluteSize.X / (slider.max - slider.min) * (newres - slider.min)), 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
-                else
-                    slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * size, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
-                end
+                slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * size, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+            end
+        else
+            local newres = utility.round(result, 2)
+            value.Text = newres..slider.measurement.."/"..slider.max..slider.measurement
+            slider.current = newres
+            slider.callback(newres)
+            if slider.tick then
+                slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * (slider.color.AbsoluteSize.X / (slider.max - slider.min) * (newres - slider.min)), 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+            else
+                slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * size, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
             end
         end
     end
     
-    sliderbutton.MouseButton1Down:Connect(function(input)
+    -- Mouse input handling
+    sliderbutton.MouseButton1Down:Connect(function()
         slider.holding = true
-        slide(input)
         table.insert(self.library.themeitems["accent"]["BorderColor3"], outline)
         outline.BorderColor3 = self.library.theme.accent
     end)
     
-    sliderbutton.TouchTap:Connect(function(input)
+    -- Touch input handling
+    sliderbutton.TouchLongPress:Connect(function(input)
         slider.holding = true
-        slider.touchId = input
-        slide(input)
+        slider.activeTouch = input
         table.insert(self.library.themeitems["accent"]["BorderColor3"], outline)
         outline.BorderColor3 = self.library.theme.accent
     end)
     
+    -- Input changed handler
     uis.InputChanged:Connect(function(input)
-        if slider.holding and ((input.UserInputType == Enum.UserInputType.MouseMovement and not slider.touchId) or 
-                              (input.UserInputType == Enum.UserInputType.Touch and slider.touchId and input == slider.touchId)) then
-            slide(input)
+        if slider.holding then
+            if input.UserInputType == Enum.UserInputType.MouseMovement or 
+               (input.UserInputType == Enum.UserInputType.Touch and input == slider.activeTouch) then
+                slide(input)
+            end
         end
     end)
     
+    -- Input ended handler
     uis.InputEnded:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 and slider.holding and not slider.touchId) or 
-           (input.UserInputType == Enum.UserInputType.Touch and slider.touchId and input == slider.touchId) then
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 and slider.holding) or
+           (input.UserInputType == Enum.UserInputType.Touch and input == slider.activeTouch) then
             slider.holding = false
-            slider.touchId = nil
+            slider.activeTouch = nil
             outline.BorderColor3 = Color3.fromRGB(12, 12, 12)
             local find = table.find(self.library.themeitems["accent"]["BorderColor3"], outline)
             if find then
@@ -2098,6 +2103,7 @@ function sections:slider(props)
     
     self.library.labels[#self.library.labels+1] = title
     self.library.labels[#self.library.labels+1] = value
+    
     -- // metatable indexing + return
     setmetatable(slider, sliders)
     return slider
