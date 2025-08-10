@@ -1121,16 +1121,20 @@ function pages:section(props)
 	local section = {}
 	-- // main
 	local sectionholder = utility.new(
-		"Frame",
-		{
-			BackgroundColor3 = Color3.fromRGB(24, 24, 24),
-			BorderColor3 = Color3.fromRGB(56, 56, 56),
-			BorderMode = "Inset",
-			BorderSizePixel = 1,
-			Size = UDim2.new(1,0,0,size),
-			Parent = self[side]
-		}
-	)
+        "ScrollingFrame",
+        {
+            BackgroundColor3 = Color3.fromRGB(24, 24, 24),
+            BorderColor3 = Color3.fromRGB(56, 56, 56),
+            BorderMode = "Inset",
+            BorderSizePixel = 1,
+            Size = UDim2.new(1, 0, 0, size),  -- Fixed height
+            ScrollBarThickness = 5,
+            ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100),
+            AutomaticCanvasSize = Enum.AutomaticSize.Y,
+            CanvasSize = UDim2.new(0, 0, 0, 0),
+            Parent = self[side]
+        }
+    )
 	--
 	local outline = utility.new(
 		"Frame",
@@ -1159,16 +1163,16 @@ function pages:section(props)
 	table.insert(self.library.themeitems["accent"]["BackgroundColor3"],color)
 	--
 	local content = utility.new(
-		"Frame",
-		{
-			AnchorPoint = Vector2.new(0.5,1),
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-			Size = UDim2.new(1,-12,1,-25),
-			Position = UDim2.new(0.5,0,1,-5),
-			Parent = outline
-		}
-	)
+        "Frame",
+        {
+            AnchorPoint = Vector2.new(0.5, 1),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Size = UDim2.new(1, -12, 1, -25),  -- Account for padding
+            Position = UDim2.new(0.5, 0, 1, -5),
+            Parent = outline
+        }
+    )
 	--
 	local title = utility.new(
 		"TextLabel",
@@ -1227,16 +1231,20 @@ function pages:multisection(props)
 	local multisection = {}
 	-- // main
 	local sectionholder = utility.new(
-		"Frame",
-		{
-			BackgroundColor3 = Color3.fromRGB(24, 24, 24),
-			BorderColor3 = Color3.fromRGB(56, 56, 56),
-			BorderMode = "Inset",
-			BorderSizePixel = 1,
-			Size = UDim2.new(1,0,0,size),
-			Parent = self[side]
-		}
-	)
+        "ScrollingFrame",
+        {
+            BackgroundColor3 = Color3.fromRGB(24, 24, 24),
+            BorderColor3 = Color3.fromRGB(56, 56, 56),
+            BorderMode = "Inset",
+            BorderSizePixel = 1,
+            Size = UDim2.new(1, 0, 0, size),  -- Fixed height
+            ScrollBarThickness = 5,
+            ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100),
+            AutomaticCanvasSize = Enum.AutomaticSize.Y,
+            CanvasSize = UDim2.new(0, 0, 0, 0),
+            Parent = self[side]
+        }
+    )
 	--
 	local outline = utility.new(
 		"Frame",
