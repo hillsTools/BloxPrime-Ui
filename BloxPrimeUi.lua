@@ -2019,19 +2019,19 @@ function sections:slider(props)
         ["tick"] = ticking,
         ["rounding"] = rounding,
         ["callback"] = callback,
-        ["dragging"] = false,
-        ["touchId"] = nil
+        ["dragging"] = false
     }
     
     local function updateSlider(input)
         if not slider.dragging then return end
         
-        -- Check if this is our active touch (for mobile) or any mouse input
-        if input.UserInputType == Enum.UserInputType.Touch and input ~= slider.touchId then
-            return
+        local posX
+        if input.UserInputType == Enum.UserInputType.Touch then
+            posX = input.Position.X
+        else
+            posX = input.Position.X
         end
         
-        local posX = input.Position.X
         local minX = slider.color.AbsolutePosition.X
         local maxX = minX + slider.color.AbsoluteSize.X
         local clampedX = math.clamp(posX, minX, maxX)
@@ -2066,7 +2066,6 @@ function sections:slider(props)
     -- Touch input
     sliderbutton.TouchStarted:Connect(function(input)
         slider.dragging = true
-        slider.touchId = input
         outline.BorderColor3 = self.library.theme.accent
         table.insert(self.library.themeitems["accent"]["BorderColor3"], outline)
     end)
@@ -2075,7 +2074,7 @@ function sections:slider(props)
     uis.InputChanged:Connect(function(input)
         if slider.dragging then
             if input.UserInputType == Enum.UserInputType.MouseMovement or 
-               (input.UserInputType == Enum.UserInputType.Touch and input == slider.touchId) then
+               input.UserInputType == Enum.UserInputType.Touch then
                 updateSlider(input)
             end
         end
@@ -2084,9 +2083,8 @@ function sections:slider(props)
     -- Handle input ending
     uis.InputEnded:Connect(function(input)
         if (input.UserInputType == Enum.UserInputType.MouseButton1 and slider.dragging) or
-           (input.UserInputType == Enum.UserInputType.Touch and input == slider.touchId) then
+           (input.UserInputType == Enum.UserInputType.Touch and slider.dragging) then
             slider.dragging = false
-            slider.touchId = nil
             outline.BorderColor3 = Color3.fromRGB(12, 12, 12)
             local find = table.find(self.library.themeitems["accent"]["BorderColor3"], outline)
             if find then
