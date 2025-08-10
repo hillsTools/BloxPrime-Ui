@@ -2025,13 +2025,7 @@ function sections:slider(props)
     local function updateSlider(input)
         if not slider.dragging then return end
         
-        local posX
-        if input.UserInputType == Enum.UserInputType.Touch then
-            posX = input.Position.X
-        else
-            posX = input.Position.X
-        end
-        
+        local posX = input.Position.X
         local minX = slider.color.AbsolutePosition.X
         local maxX = minX + slider.color.AbsoluteSize.X
         local clampedX = math.clamp(posX, minX, maxX)
@@ -2056,34 +2050,24 @@ function sections:slider(props)
         end
     end
     
-    -- Mouse input
-    sliderbutton.MouseButton1Down:Connect(function()
-        slider.dragging = true
-        outline.BorderColor3 = self.library.theme.accent
-        table.insert(self.library.themeitems["accent"]["BorderColor3"], outline)
-    end)
-    
-    -- Touch input
-    sliderbutton.TouchStarted:Connect(function(input)
-        slider.dragging = true
-        outline.BorderColor3 = self.library.theme.accent
-        table.insert(self.library.themeitems["accent"]["BorderColor3"], outline)
-    end)
-    
-    -- Handle input changes
-    uis.InputChanged:Connect(function(input)
-        if slider.dragging then
-            if input.UserInputType == Enum.UserInputType.MouseMovement or 
-               input.UserInputType == Enum.UserInputType.Touch then
-                updateSlider(input)
-            end
+    -- Universal input handling
+    sliderbutton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            slider.dragging = true
+            outline.BorderColor3 = self.library.theme.accent
+            table.insert(self.library.themeitems["accent"]["BorderColor3"], outline)
+            updateSlider(input) -- Update immediately on click
         end
     end)
     
-    -- Handle input ending
+    uis.InputChanged:Connect(function(input)
+        if slider.dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            updateSlider(input)
+        end
+    end)
+    
     uis.InputEnded:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 and slider.dragging) or
-           (input.UserInputType == Enum.UserInputType.Touch and slider.dragging) then
+        if slider.dragging and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
             slider.dragging = false
             outline.BorderColor3 = Color3.fromRGB(12, 12, 12)
             local find = table.find(self.library.themeitems["accent"]["BorderColor3"], outline)
