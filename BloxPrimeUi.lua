@@ -2159,7 +2159,7 @@ function sections:dropdown(props)
             Parent = self.content
         }
     )
-    --
+    
     local outline = utility.new(
         "Frame",
         {
@@ -2172,7 +2172,7 @@ function sections:dropdown(props)
             Parent = dropdownholder
         }
     )
-    --
+    
     local outline2 = utility.new(
         "Frame",
         {
@@ -2185,7 +2185,7 @@ function sections:dropdown(props)
             Parent = outline
         }
     )
-    --
+    
     local color = utility.new(
         "Frame",
         {
@@ -2196,7 +2196,7 @@ function sections:dropdown(props)
             Parent = outline2
         }
     )
-    --
+    
     utility.new(
         "UIGradient",
         {
@@ -2205,7 +2205,7 @@ function sections:dropdown(props)
             Parent = color
         }
     )
-    --
+    
     local value = utility.new(
         "TextLabel",
         {
@@ -2223,7 +2223,7 @@ function sections:dropdown(props)
             Parent = outline
         }
     )
-    --
+    
     local indicator = utility.new(
         "TextLabel",
         {
@@ -2241,7 +2241,7 @@ function sections:dropdown(props)
             Parent = outline
         }
     )
-    --
+    
     local title = utility.new(
         "TextLabel",
         {
@@ -2257,7 +2257,7 @@ function sections:dropdown(props)
             Parent = dropdownholder
         }
     )
-    --
+    
     local dropdownbutton = utility.new(
         "TextButton",
         {
@@ -2269,7 +2269,7 @@ function sections:dropdown(props)
             Parent = dropdownholder
         }
     )
-    --
+    
     local optionsholder = utility.new(
         "Frame",
         {
@@ -2283,11 +2283,10 @@ function sections:dropdown(props)
             Parent = dropdownholder
         }
     )
-    --
+    
     local size = #options
-    --
     size = math.clamp(size,1,max)
-    --
+    
     local optionsoutline = utility.new(
         "ScrollingFrame",
         {
@@ -2301,7 +2300,7 @@ function sections:dropdown(props)
             CanvasSize = UDim2.new(0,0,0,18*#options),
             ScrollBarImageTransparency = 0.25,
             ScrollBarImageColor3 = Color3.fromRGB(0,0,0),
-            ScrollBarThickness = 8, -- Increased thickness for better mobile touch
+            ScrollBarThickness = 8,
             ScrollingEnabled = true,
             VerticalScrollBarInset = "ScrollBar",
             VerticalScrollBarPosition = "Right",
@@ -2310,10 +2309,6 @@ function sections:dropdown(props)
         }
     )
     
-    -- Enable touch scrolling
-    optionsoutline.TouchPan = Enum.TouchPanMode.Vertical
-    optionsoutline.ScrollingDirection = Enum.ScrollingDirection.Y
-    
     utility.new(
         "UIListLayout",
         {
@@ -2321,6 +2316,7 @@ function sections:dropdown(props)
             Parent = optionsoutline
         }
     )
+
     -- // dropdown tbl
     dropdown = {
         ["library"] = self.library,
@@ -2332,11 +2328,12 @@ function sections:dropdown(props)
         ["open"] = false,
         ["titles"] = {},
         ["current"] = def,
-        ["callback"] = callback
+        ["callback"] = callback,
+        ["optionsoutline"] = optionsoutline
     }
-    --
+    
     table.insert(dropdown.library.dropdowns,dropdown)
-    --
+    
     for i,v in pairs(options) do
         local ddoptionbutton = utility.new(
             "TextButton",
@@ -2349,7 +2346,7 @@ function sections:dropdown(props)
                 Parent = optionsoutline
             }
         )
-        --
+        
         local ddoptiontitle = utility.new(
             "TextLabel",
             {
@@ -2368,13 +2365,14 @@ function sections:dropdown(props)
                 Parent = ddoptionbutton
             }
         )
-        --
+        
         self.library.labels[#self.library.labels+1] = ddoptiontitle
-        --
         table.insert(dropdown.titles,ddoptiontitle)
-        --
-        if v == dropdown.current then ddoptiontitle.TextColor3 = self.library.theme.accent end
-        --
+        
+        if v == dropdown.current then 
+            ddoptiontitle.TextColor3 = self.library.theme.accent 
+        end
+        
         ddoptionbutton.MouseButton1Down:Connect(function()
             optionsholder.Visible = false
             dropdown.open = false
@@ -2390,25 +2388,8 @@ function sections:dropdown(props)
             table.insert(self.library.themeitems["accent"]["TextColor3"],ddoptiontitle)
             dropdown.callback(v)
         end)
-        
-        -- Add touch support for mobile
-        ddoptionbutton.TouchTap:Connect(function()
-            optionsholder.Visible = false
-            dropdown.open = false
-            indicator.Text = "+"
-            for z,x in pairs(dropdown.titles) do
-                if x.TextColor3 == self.library.theme.accent then
-                    x.TextColor3 = Color3.fromRGB(255,255,255)
-                end
-            end
-            dropdown.current = v
-            dropdown.value.Text = v
-            ddoptiontitle.TextColor3 = self.library.theme.accent
-            table.insert(self.library.themeitems["accent"]["TextColor3"],ddoptiontitle)
-            dropdown.callback(v)
-        end)
     end
-    --
+    
     dropdownbutton.MouseButton1Down:Connect(function()
         dropdown.library:closewindows(dropdown)
         for i,v in pairs(dropdown.titles) do
@@ -2427,36 +2408,95 @@ function sections:dropdown(props)
         end
     end)
     
-    -- Add touch support for mobile
-    dropdownbutton.TouchTap:Connect(function()
-        dropdown.library:closewindows(dropdown)
-        for i,v in pairs(dropdown.titles) do
-            if v.Text == dropdown.current then
-                v.TextColor3 = dropdown.library.theme.accent
-            else
-                v.TextColor3 = Color3.fromRGB(255,255,255)
+    -- Add methods to dropdown object
+    function dropdown:set(value)
+        if value ~= nil then
+            if table.find(self.options, value) then
+                self.current = tostring(value)
+                self.value.Text = tostring(value)
+                self.callback(tostring(value))
+                for z,x in pairs(self.titles) do
+                    if x.Text == value then
+                        x.TextColor3 = self.library.theme.accent
+                    else
+                        x.TextColor3 = Color3.fromRGB(255,255,255)
+                    end
+                end
             end
         end
-        optionsholder.Visible = not dropdown.open
-        dropdown.open = not dropdown.open
-        if dropdown.open then
-            indicator.Text = "-"
-        else
-            indicator.Text = "+"
+    end
+    
+    function dropdown:add(option)
+        if not table.find(self.options, option) then
+            table.insert(self.options, option)
+            
+            -- Update the scrolling frame canvas size
+            self.optionsoutline.CanvasSize = UDim2.new(0,0,0,18*#self.options)
+            
+            -- Create new option button
+            local ddoptionbutton = utility.new(
+                "TextButton",
+                {
+                    AnchorPoint = Vector2.new(0,0),
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(1,0,0,18),
+                    Text = "",
+                    ZIndex = 6,
+                    Parent = self.optionsoutline
+                }
+            )
+            
+            local ddoptiontitle = utility.new(
+                "TextLabel",
+                {
+                    AnchorPoint = Vector2.new(0.5,0),
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(1,-10,1,0),
+                    Position = UDim2.new(0.5,0,0,0),
+                    Font = self.library.font,
+                    Text = option,
+                    TextColor3 = Color3.fromRGB(255,255,255),
+                    TextSize = self.library.textsize,
+                    TextStrokeTransparency = 0,
+                    TextXAlignment = "Left",
+                    ClipsDescendants = true,
+                    ZIndex = 6,
+                    Parent = ddoptionbutton
+                }
+            )
+            
+            self.library.labels[#self.library.labels+1] = ddoptiontitle
+            table.insert(self.titles, ddoptiontitle)
+            
+            ddoptionbutton.MouseButton1Down:Connect(function()
+                self.optionsholder.Visible = false
+                self.open = false
+                self.indicator.Text = "+"
+                for z,x in pairs(self.titles) do
+                    if x.TextColor3 == self.library.theme.accent then
+                        x.TextColor3 = Color3.fromRGB(255,255,255)
+                    end
+                end
+                self.current = option
+                self.value.Text = option
+                ddoptiontitle.TextColor3 = self.library.theme.accent
+                table.insert(self.library.themeitems["accent"]["TextColor3"], ddoptiontitle)
+                self.callback(option)
+            end)
         end
-    end)
-    --
+    end
+    
     local pointer = props.pointer or props.Pointer or props.pointername or props.Pointername or props.PointerName or props.pointerName or nil
-    --
+    
     if pointer then
         if self.pointers then
             self.pointers[tostring(pointer)] = dropdown
         end
     end
-    --
+    
     self.library.labels[#self.library.labels+1] = title
     self.library.labels[#self.library.labels+1] = value
-    -- // metatable indexing + return
+    
     setmetatable(dropdown, dropdowns)
     return dropdown
 end
