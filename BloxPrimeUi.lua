@@ -2019,72 +2019,74 @@ function sections:slider(props)
         ["tick"] = ticking,
         ["rounding"] = rounding,
         ["callback"] = callback,
-        ["activeTouch"] = nil  -- Track the active touch input
+        ["dragging"] = false,
+        ["touchId"] = nil
     }
     
-    local function slide(input)
-        -- Only process if this is our active touch or mouse input
-        if input.UserInputType == Enum.UserInputType.Touch and slider.activeTouch ~= input then
+    local function updateSlider(input)
+        if not slider.dragging then return end
+        
+        -- Check if this is our active touch (for mobile) or any mouse input
+        if input.UserInputType == Enum.UserInputType.Touch and input ~= slider.touchId then
             return
         end
         
-        local size = math.clamp(input.Position.X - slider.color.AbsolutePosition.X, 0, slider.color.AbsoluteSize.X)
-        local result = (slider.max - slider.min) / slider.color.AbsoluteSize.X * size + slider.min
+        local posX = input.Position.X
+        local minX = slider.color.AbsolutePosition.X
+        local maxX = minX + slider.color.AbsoluteSize.X
+        local clampedX = math.clamp(posX, minX, maxX)
+        local percentage = (clampedX - minX) / (maxX - minX)
+        local value = min + (max - min) * percentage
         
         if slider.rounding then
-            local newres = math.floor(result)
-            value.Text = newres..slider.measurement.."/"..slider.max..slider.measurement
-            slider.current = newres
-            slider.callback(newres)
-            if slider.tick then
-                slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * (slider.color.AbsoluteSize.X / (slider.max - slider.min) * (newres - slider.min)), 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
-            else
-                slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * size, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
-            end
+            value = math.floor(value)
         else
-            local newres = utility.round(result, 2)
-            value.Text = newres..slider.measurement.."/"..slider.max..slider.measurement
-            slider.current = newres
-            slider.callback(newres)
-            if slider.tick then
-                slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * (slider.color.AbsoluteSize.X / (slider.max - slider.min) * (newres - slider.min)), 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
-            else
-                slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * size, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
-            end
+            value = utility.round(value, 2)
+        end
+        
+        slider.current = value
+        slider.value.Text = value..slider.measurement.."/"..max..slider.measurement
+        slider.callback(value)
+        
+        if slider.tick then
+            local size = (1 / slider.color.AbsoluteSize.X) * (slider.color.AbsoluteSize.X / (max - min) * (value - min))
+            slider.slide.Size = UDim2.new(size, 0, 1, 0)
+        else
+            slider.slide.Size = UDim2.new(percentage, 0, 1, 0)
         end
     end
     
-    -- Mouse input handling
+    -- Mouse input
     sliderbutton.MouseButton1Down:Connect(function()
-        slider.holding = true
-        table.insert(self.library.themeitems["accent"]["BorderColor3"], outline)
+        slider.dragging = true
         outline.BorderColor3 = self.library.theme.accent
+        table.insert(self.library.themeitems["accent"]["BorderColor3"], outline)
     end)
     
-    -- Touch input handling
-    sliderbutton.TouchLongPress:Connect(function(input)
-        slider.holding = true
-        slider.activeTouch = input
-        table.insert(self.library.themeitems["accent"]["BorderColor3"], outline)
+    -- Touch input
+    sliderbutton.TouchStarted:Connect(function(input)
+        slider.dragging = true
+        slider.touchId = input
         outline.BorderColor3 = self.library.theme.accent
+        table.insert(self.library.themeitems["accent"]["BorderColor3"], outline)
     end)
     
-    -- Input changed handler
+    -- Handle input changes
     uis.InputChanged:Connect(function(input)
-        if slider.holding then
+        if slider.dragging then
             if input.UserInputType == Enum.UserInputType.MouseMovement or 
-               (input.UserInputType == Enum.UserInputType.Touch and input == slider.activeTouch) then
-                slide(input)
+               (input.UserInputType == Enum.UserInputType.Touch and input == slider.touchId) then
+                updateSlider(input)
             end
         end
     end)
     
-    -- Input ended handler
+    -- Handle input ending
     uis.InputEnded:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 and slider.holding) or
-           (input.UserInputType == Enum.UserInputType.Touch and input == slider.activeTouch) then
-            slider.holding = false
-            slider.activeTouch = nil
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 and slider.dragging) or
+           (input.UserInputType == Enum.UserInputType.Touch and input == slider.touchId) then
+            slider.dragging = false
+            slider.touchId = nil
             outline.BorderColor3 = Color3.fromRGB(12, 12, 12)
             local find = table.find(self.library.themeitems["accent"]["BorderColor3"], outline)
             if find then
