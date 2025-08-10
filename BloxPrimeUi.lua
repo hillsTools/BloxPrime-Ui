@@ -276,15 +276,19 @@ function library:new(props)
     )
     -- 8
     local tabs = utility.new(
-        "Frame",
+        "ScrollingFrame",
         {
             AnchorPoint = Vector2.new(0.5, 1),
             BackgroundColor3 = Color3.fromRGB(20, 20, 20),
             BorderColor3 = Color3.fromRGB(12, 12, 12),
             BorderMode = "Inset",
             BorderSizePixel = 1,
-            Size = UDim2.new(1, 0, 1, -20),
+            Size = UDim2.new(1, 0, 1, -20),  -- Fill available space
             Position = UDim2.new(0.5, 0, 1, 0),
+            ScrollBarThickness = 5,
+            ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100),
+            AutomaticCanvasSize = Enum.AutomaticSize.Y,
+            CanvasSize = UDim2.new(0, 0, 0, 0),
             Parent = holder
         }
     )
