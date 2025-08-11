@@ -16,101 +16,6 @@ local colorpickers = {}
 local configloaders = {}
 local watermarks = {}
 local loaders = {}
--- First, create a labels table for the metatable
-local labels = {}
-labels.__index = labels
-
--- Then add the label function to the sections metatable
-function sections:label(props)
-    -- // properties
-    local text = props.text or props.Text or props.label or props.Label or "New Label"
-    local centered = props.center or props.Center or props.centered or props.Centered or false
-    local pointer = props.pointer or props.Pointer or props.pointername or props.Pointername or props.PointerName or props.pointerName or nil
-    
-    -- // variables
-    local label = {}
-    
-    -- // main
-    local labelholder = utility.new(
-        "Frame",
-        {
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1, 0, 0, 20),
-            Parent = self.content
-        }
-    )
-    
-    local textlabel = utility.new(
-        "TextLabel",
-        {
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1, -10, 1, 0),
-            Position = UDim2.new(0.5, 0, 0, 0),
-            AnchorPoint = Vector2.new(0.5, 0),
-            Font = self.library.font,
-            Text = text,
-            TextColor3 = Color3.fromRGB(255, 255, 255),
-            TextSize = self.library.textsize,
-            TextStrokeTransparency = 0,
-            TextXAlignment = centered and "Center" or "Left",
-            TextWrapped = true,
-            Parent = labelholder
-        }
-    )
-    
-    -- // label tbl
-    label = {
-        ["library"] = self.library,
-        ["textlabel"] = textlabel,
-        ["holder"] = labelholder
-    }
-    
-    -- Add pointer if specified
-    if pointer then
-        if self.pointers then
-            self.pointers[tostring(pointer)] = label
-        end
-    end
-    
-    self.library.labels[#self.library.labels + 1] = textlabel
-    
-    -- // metatable indexing + return
-    setmetatable(label, labels)
-    return label
-end
-
--- Now add methods to the labels metatable
-function labels:set(text)
-    if text ~= nil then
-        self.textlabel.Text = tostring(text)
-    end
-    return self
-end
-
-function labels:setcolor(color)
-    if color then
-        self.textlabel.TextColor3 = color
-    end
-    return self
-end
-
-function labels:setalignment(align)
-    if align == "center" then
-        self.textlabel.TextXAlignment = "Center"
-    elseif align == "left" then
-        self.textlabel.TextXAlignment = "Left"
-    elseif align == "right" then
-        self.textlabel.TextXAlignment = "Right"
-    end
-    return self
-end
-
-function labels:setvisible(bool)
-    if bool ~= nil then
-        self.holder.Visible = bool
-    end
-    return self
-end
 --
 local utility = {}
 --
@@ -371,19 +276,15 @@ function library:new(props)
     )
     -- 8
     local tabs = utility.new(
-        "ScrollingFrame",
+        "Frame",
         {
             AnchorPoint = Vector2.new(0.5, 1),
             BackgroundColor3 = Color3.fromRGB(20, 20, 20),
             BorderColor3 = Color3.fromRGB(12, 12, 12),
             BorderMode = "Inset",
             BorderSizePixel = 1,
-            Size = UDim2.new(1, 0, 1, -20),  -- Fill available space
+            Size = UDim2.new(1, 0, 1, -20),
             Position = UDim2.new(0.5, 0, 1, 0),
-            ScrollBarThickness = 5,
-            ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100),
-            AutomaticCanvasSize = Enum.AutomaticSize.Y,
-            CanvasSize = UDim2.new(0, 0, 0, 0),
             Parent = holder
         }
     )
@@ -1216,20 +1117,16 @@ function pages:section(props)
 	local section = {}
 	-- // main
 	local sectionholder = utility.new(
-        "ScrollingFrame",
-        {
-            BackgroundColor3 = Color3.fromRGB(24, 24, 24),
-            BorderColor3 = Color3.fromRGB(56, 56, 56),
-            BorderMode = "Inset",
-            BorderSizePixel = 1,
-            Size = UDim2.new(1, 0, 0, size),  -- Fixed height
-            ScrollBarThickness = 5,
-            ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100),
-            AutomaticCanvasSize = Enum.AutomaticSize.Y,
-            CanvasSize = UDim2.new(0, 0, 0, 0),
-            Parent = self[side]
-        }
-    )
+		"Frame",
+		{
+			BackgroundColor3 = Color3.fromRGB(24, 24, 24),
+			BorderColor3 = Color3.fromRGB(56, 56, 56),
+			BorderMode = "Inset",
+			BorderSizePixel = 1,
+			Size = UDim2.new(1,0,0,size),
+			Parent = self[side]
+		}
+	)
 	--
 	local outline = utility.new(
 		"Frame",
@@ -1258,16 +1155,16 @@ function pages:section(props)
 	table.insert(self.library.themeitems["accent"]["BackgroundColor3"],color)
 	--
 	local content = utility.new(
-        "Frame",
-        {
-            AnchorPoint = Vector2.new(0.5, 1),
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            Size = UDim2.new(1, -12, 1, -25),  -- Account for padding
-            Position = UDim2.new(0.5, 0, 1, -5),
-            Parent = outline
-        }
-    )
+		"Frame",
+		{
+			AnchorPoint = Vector2.new(0.5,1),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			Size = UDim2.new(1,-12,1,-25),
+			Position = UDim2.new(0.5,0,1,-5),
+			Parent = outline
+		}
+	)
 	--
 	local title = utility.new(
 		"TextLabel",
@@ -1326,20 +1223,16 @@ function pages:multisection(props)
 	local multisection = {}
 	-- // main
 	local sectionholder = utility.new(
-        "ScrollingFrame",
-        {
-            BackgroundColor3 = Color3.fromRGB(24, 24, 24),
-            BorderColor3 = Color3.fromRGB(56, 56, 56),
-            BorderMode = "Inset",
-            BorderSizePixel = 1,
-            Size = UDim2.new(1, 0, 0, size),  -- Fixed height
-            ScrollBarThickness = 5,
-            ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100),
-            AutomaticCanvasSize = Enum.AutomaticSize.Y,
-            CanvasSize = UDim2.new(0, 0, 0, 0),
-            Parent = self[side]
-        }
-    )
+		"Frame",
+		{
+			BackgroundColor3 = Color3.fromRGB(24, 24, 24),
+			BorderColor3 = Color3.fromRGB(56, 56, 56),
+			BorderMode = "Inset",
+			BorderSizePixel = 1,
+			Size = UDim2.new(1,0,0,size),
+			Parent = self[side]
+		}
+	)
 	--
 	local outline = utility.new(
 		"Frame",
@@ -1965,227 +1858,217 @@ end
 
 --
 function sections:slider(props)
-    -- // properties
-    local name = props.name or props.Name or props.page or props.Page or props.pagename or props.Pagename or props.PageName or props.pageName or "new ui"
-    local def = props.def or props.Def or props.default or props.Default or 0
-    local max = props.max or props.Max or props.maximum or props.Maximum or 100
-    local min = props.min or props.Min or props.minimum or props.Minimum or 0
-    local rounding = props.rounding or props.Rounding or props.round or props.Round or props.decimals or props.Decimals or false
-    local ticking = props.tick or props.Tick or props.ticking or props.Ticking or false
-    local measurement = props.measurement or props.Measurement or props.digit or props.Digit or props.calc or props.Calc or ""
-    local callback = props.callback or props.callBack or props.CallBack or props.Callback or function()end
-    def = math.clamp(def,min,max)
-    
-    -- // variables
-    local slider = {}
-    
-    -- // main
-    local sliderholder = utility.new(
-        "Frame",
-        {
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1,0,0,25),
-            Parent = self.content
-        }
-    )
-    
-    local outline = utility.new(
-        "Frame",
-        {
-            BackgroundColor3 = Color3.fromRGB(24, 24, 24),
-            BorderColor3 = Color3.fromRGB(12, 12, 12),
-            BorderMode = "Inset",
-            BorderSizePixel = 1,
-            Size = UDim2.new(1,0,0,12),
-            Position = UDim2.new(0,0,0,15),
-            Parent = sliderholder
-        }
-    )
-    
-    local outline2 = utility.new(
-        "Frame",
-        {
-            BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-            BorderColor3 = Color3.fromRGB(56, 56, 56),
-            BorderMode = "Inset",
-            BorderSizePixel = 1,
-            Size = UDim2.new(1,0,1,0),
-            Parent = outline
-        }
-    )
-    
-    local value = utility.new(
-        "TextLabel",
-        {
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1,0,0,2),
-            Position = UDim2.new(0,0,0.5,0),
-            Font = self.library.font,
-            Text = def..measurement.."/"..max..measurement,
-            TextColor3 = Color3.fromRGB(255,255,255),
-            TextSize = self.library.textsize,
-            TextStrokeTransparency = 0,
-            ZIndex = 3,
-            Parent = outline
-        }
-    )
-    
-    local color = utility.new(
-        "Frame",
-        {
-            BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-            BorderSizePixel = 0,
-            Size = UDim2.new(1,0,1,0),
-            Parent = outline2
-        }
-    )
-    
-    utility.new(
-        "UIGradient",
-        {
-            Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(199, 191, 204)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 255, 255))},
-            Rotation = 90,
-            Parent = color
-        }
-    )
-    
-    local slide = utility.new(
-        "Frame",
-        {
-            BackgroundColor3 = self.library.theme.accent,
-            BorderSizePixel = 0,
-            Size = UDim2.new((1 / color.AbsoluteSize.X) * (color.AbsoluteSize.X / (max - min) * (def - min)),0,1,0),
-            ZIndex = 2,
-            Parent = outline
-        }
-    )
-    table.insert(self.library.themeitems["accent"]["BackgroundColor3"],slide)
-    
-    utility.new(
-        "UIGradient",
-        {
-            Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(199, 191, 204)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 255, 255))},
-            Rotation = 90,
-            Parent = slide
-        }
-    )
-    
-    local sliderbutton = utility.new(
-        "TextButton",
-        {
-            AnchorPoint = Vector2.new(0,0),
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1,0,1,0),
-            Position = UDim2.new(0,0,0,0),
-            Text = "",
-            Parent = sliderholder
-        }
-    )
-    
-    local title = utility.new(
-        "TextLabel",
-        {
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1,0,0,15),
-            Position = UDim2.new(0,0,0,0),
-            Font = self.library.font,
-            Text = name,
-            TextColor3 = Color3.fromRGB(255,255,255),
-            TextSize = self.library.textsize,
-            TextStrokeTransparency = 0,
-            TextXAlignment = "Left",
-            Parent = sliderholder
-        }
-    )
-    
-    -- // slider tbl
-    slider = {
-        ["library"] = self.library,
-        ["outline"] = outline,
-        ["sliderbutton"] = sliderbutton,
-        ["title"] = title,
-        ["value"] = value,
-        ["slide"] = slide,
-        ["color"] = color,
-        ["max"] = max,
-        ["min"] = min,
-        ["current"] = def,
-        ["measurement"] = measurement,
-        ["tick"] = ticking,
-        ["rounding"] = rounding,
-        ["callback"] = callback,
-        ["dragging"] = false
-    }
-    
-    local function updateSlider(input)
-        if not slider.dragging then return end
-        
-        local posX = input.Position.X
-        local minX = slider.color.AbsolutePosition.X
-        local maxX = minX + slider.color.AbsoluteSize.X
-        local clampedX = math.clamp(posX, minX, maxX)
-        local percentage = (clampedX - minX) / (maxX - minX)
-        local value = min + (max - min) * percentage
-        
-        if slider.rounding then
-            value = math.floor(value)
-        else
-            value = utility.round(value, 2)
-        end
-        
-        slider.current = value
-        slider.value.Text = value..slider.measurement.."/"..max..slider.measurement
-        slider.callback(value)
-        
-        if slider.tick then
-            local size = (1 / slider.color.AbsoluteSize.X) * (slider.color.AbsoluteSize.X / (max - min) * (value - min))
-            slider.slide.Size = UDim2.new(size, 0, 1, 0)
-        else
-            slider.slide.Size = UDim2.new(percentage, 0, 1, 0)
-        end
-    end
-    
-    -- Universal input handling
-    sliderbutton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            slider.dragging = true
-            outline.BorderColor3 = self.library.theme.accent
-            table.insert(self.library.themeitems["accent"]["BorderColor3"], outline)
-            updateSlider(input) -- Update immediately on click
-        end
-    end)
-    
-    uis.InputChanged:Connect(function(input)
-        if slider.dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            updateSlider(input)
-        end
-    end)
-    
-    uis.InputEnded:Connect(function(input)
-        if slider.dragging and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-            slider.dragging = false
-            outline.BorderColor3 = Color3.fromRGB(12, 12, 12)
-            local find = table.find(self.library.themeitems["accent"]["BorderColor3"], outline)
-            if find then
-                table.remove(self.library.themeitems["accent"]["BorderColor3"], find)
-            end
-        end
-    end)
-    
-    local pointer = props.pointer or props.Pointer or props.pointername or props.Pointername or props.PointerName or props.pointerName or nil
-    
-    if pointer then
-        if self.pointers then
-            self.pointers[tostring(pointer)] = slider
-        end
-    end
-    
-    self.library.labels[#self.library.labels+1] = title
-    self.library.labels[#self.library.labels+1] = value
-    
-    -- // metatable indexing + return
-    setmetatable(slider, sliders)
-    return slider
+	-- // properties
+	local name = props.name or props.Name or props.page or props.Page or props.pagename or props.Pagename or props.PageName or props.pageName or "new ui"
+	local def = props.def or props.Def or props.default or props.Default or 0
+	local max = props.max or props.Max or props.maximum or props.Maximum or 100
+	local min = props.min or props.Min or props.minimum or props.Minimum or 0
+	local rounding = props.rounding or props.Rounding or props.round or props.Round or props.decimals or props.Decimals or false
+	local ticking = props.tick or props.Tick or props.ticking or props.Ticking or false
+	local measurement = props.measurement or props.Measurement or props.digit or props.Digit or props.calc or props.Calc or ""
+	local callback = props.callback or props.callBack or props.CallBack or props.Callback or function()end
+	def = math.clamp(def,min,max)
+	-- // variables
+	local slider = {}
+	-- // main
+	local sliderholder = utility.new(
+		"Frame",
+		{
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1,0,0,25),
+			Parent = self.content
+		}
+	)
+	--
+	local outline = utility.new(
+		"Frame",
+		{
+			BackgroundColor3 = Color3.fromRGB(24, 24, 24),
+			BorderColor3 = Color3.fromRGB(12, 12, 12),
+			BorderMode = "Inset",
+			BorderSizePixel = 1,
+			Size = UDim2.new(1,0,0,12),
+			Position = UDim2.new(0,0,0,15),
+			Parent = sliderholder
+		}
+	)
+	--
+	local outline2 = utility.new(
+		"Frame",
+		{
+			BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+			BorderColor3 = Color3.fromRGB(56, 56, 56),
+			BorderMode = "Inset",
+			BorderSizePixel = 1,
+			Size = UDim2.new(1,0,1,0),
+			Parent = outline
+		}
+	)	
+	--
+	local value = utility.new(
+		"TextLabel",
+		{
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1,0,0,2),
+			Position = UDim2.new(0,0,0.5,0),
+			Font = self.library.font,
+			Text = def..measurement.."/"..max..measurement,
+			TextColor3 = Color3.fromRGB(255,255,255),
+			TextSize = self.library.textsize,
+			TextStrokeTransparency = 0,
+			ZIndex = 3,
+			Parent = outline
+		}
+	)
+	--
+	local color = utility.new(
+		"Frame",
+		{
+			BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+			BorderSizePixel = 0,
+			Size = UDim2.new(1,0,1,0),
+			Parent = outline2
+		}
+	)
+	--
+	utility.new(
+		"UIGradient",
+		{
+			Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(199, 191, 204)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 255, 255))},
+			Rotation = 90,
+			Parent = color
+		}
+	)
+	--
+	local slide = utility.new(
+		"Frame",
+		{
+			BackgroundColor3 = self.library.theme.accent,
+			BorderSizePixel = 0,
+			Size = UDim2.new((1 / color.AbsoluteSize.X) * (color.AbsoluteSize.X / (max - min) * (def - min)),0,1,0),
+			ZIndex = 2,
+			Parent = outline
+		}
+	)
+	table.insert(self.library.themeitems["accent"]["BackgroundColor3"],slide)
+	--
+	utility.new(
+		"UIGradient",
+		{
+			Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(199, 191, 204)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 255, 255))},
+			Rotation = 90,
+			Parent = slide
+		}
+	)
+	--
+	local sliderbutton = utility.new(
+		"TextButton",
+		{
+			AnchorPoint = Vector2.new(0,0),
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1,0,1,0),
+			Position = UDim2.new(0,0,0,0),
+			Text = "",
+			Parent = sliderholder
+		}
+	)
+	--
+	local title = utility.new(
+		"TextLabel",
+		{
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1,0,0,15),
+			Position = UDim2.new(0,0,0,0),
+			Font = self.library.font,
+			Text = name,
+			TextColor3 = Color3.fromRGB(255,255,255),
+			TextSize = self.library.textsize,
+			TextStrokeTransparency = 0,
+			TextXAlignment = "Left",
+			Parent = sliderholder
+		}
+	)
+	-- // slider tbl
+	slider = {
+		["library"] = self.library,
+		["outline"] = outline,
+		["sliderbutton"] = sliderbutton,
+		["title"] = title,
+		["value"] = value,
+		["slide"] = slide,
+		["color"] = color,
+		["max"] = max,
+		["min"] = min,
+		["current"] = def,
+		["measurement"] = measurement,
+		["tick"] = ticking,
+		["rounding"] = rounding,
+		["callback"] = callback
+	}
+	--
+	local function slide()
+		local size = math.clamp(plr:GetMouse().X - slider.color.AbsolutePosition.X ,0 ,slider.color.AbsoluteSize.X)
+		local result = (slider.max - slider.min) / slider.color.AbsoluteSize.X * size + slider.min
+		if slider.rounding then
+			local newres = math.floor(result)
+			value.Text = newres..slider.measurement.."/"..slider.max..slider.measurement
+			slider.current = newres
+			slider.callback(newres)
+			if slider.tick then
+				slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * (slider.color.AbsoluteSize.X / (slider.max - slider.min) * (newres - slider.min)) ,0 ,1 ,0) ,Enum.EasingDirection.Out ,Enum.EasingStyle.Quad ,0.15 ,true)
+			else
+				slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * size ,0 ,1 ,0) ,Enum.EasingDirection.Out ,Enum.EasingStyle.Quad ,0.15 ,true)
+			end
+		else
+			local newres = utility.round(result ,2)
+			value.Text = newres..slider.measurement.."/"..slider.max..slider.measurement
+			slider.current = newres
+			slider.callback(newres)
+			if slider.tick then
+				slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * (slider.color.AbsoluteSize.X / (slider.max - slider.min) * (newres - slider.min)) ,0 ,1 ,0) ,Enum.EasingDirection.Out ,Enum.EasingStyle.Quad ,0.15 ,true)
+			else
+				slider.slide:TweenSize(UDim2.new((1 / slider.color.AbsoluteSize.X) * size ,0 ,1 ,0) ,Enum.EasingDirection.Out ,Enum.EasingStyle.Quad ,0.15 ,true)
+			end
+		end
+	end
+	--
+	sliderbutton.MouseButton1Down:Connect(function()
+		slider.holding = true
+		slide()
+		table.insert(self.library.themeitems["accent"]["BorderColor3"],outline)
+		outline.BorderColor3 = self.library.theme.accent
+	end)
+	--
+	uis.InputChanged:Connect(function()
+		if slider.holding then
+			slide()
+		end
+	end)
+	--
+	uis.InputEnded:Connect(function(Input)
+		if Input.UserInputType.Name == 'MouseButton1' and slider.holding then
+			slider.holding = false
+			outline.BorderColor3 = Color3.fromRGB(12, 12, 12)
+			local find = table.find(self.library.themeitems["accent"]["BorderColor3"],outline)
+			if find then
+				table.remove(self.library.themeitems["accent"]["BorderColor3"],find)
+			end
+		end
+	end)
+	--
+	local pointer = props.pointer or props.Pointer or props.pointername or props.Pointername or props.PointerName or props.pointerName or nil
+	--
+	if pointer then
+		if self.pointers then
+			self.pointers[tostring(pointer)] = slider
+		end
+	end
+	--
+	self.library.labels[#self.library.labels+1] = title
+	self.library.labels[#self.library.labels+1] = value
+	-- // metatable indexing + return
+	setmetatable(slider, sliders)
+	return slider
 end
 --
 function sliders:set(value)
@@ -2258,364 +2141,283 @@ function library:closewindows(ignore)
 end
 --
 function sections:dropdown(props)
-    -- // properties
-    local name = props.name or props.Name or props.page or props.Page or props.pagename or props.Pagename or props.PageName or props.pageName or "new ui"
-    local def = props.def or props.Def or props.default or props.Default or ""
-    local max = props.max or props.Max or props.maximum or props.Maximum or 4
-    local options = props.options or props.Options or props.Settings or props.settings or {}
-    local callback = props.callback or props.callBack or props.CallBack or props.Callback or function()end
-    -- // variables
-    local dropdown = {}
-    -- // main
-    local dropdownholder = utility.new(
-        "Frame",
-        {
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1,0,0,35),
-            ZIndex = 2,
-            Parent = self.content
-        }
-    )
-    
-    local outline = utility.new(
-        "Frame",
-        {
-            BackgroundColor3 = Color3.fromRGB(24, 24, 24),
-            BorderColor3 = Color3.fromRGB(12, 12, 12),
-            BorderMode = "Inset",
-            BorderSizePixel = 1,
-            Size = UDim2.new(1,0,0,20),
-            Position = UDim2.new(0,0,0,15),
-            Parent = dropdownholder
-        }
-    )
-    
-    local outline2 = utility.new(
-        "Frame",
-        {
-            BackgroundColor3 = Color3.fromRGB(24, 24, 24),
-            BorderColor3 = Color3.fromRGB(56, 56, 56),
-            BorderMode = "Inset",
-            BorderSizePixel = 1,
-            Size = UDim2.new(1,0,1,0),
-            Position = UDim2.new(0,0,0,0),
-            Parent = outline
-        }
-    )
-    
-    local color = utility.new(
-        "Frame",
-        {
-            BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-            BorderSizePixel = 0,
-            Size = UDim2.new(1,0,1,0),
-            Position = UDim2.new(0,0,0,0),
-            Parent = outline2
-        }
-    )
-    
-    utility.new(
-        "UIGradient",
-        {
-            Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(199, 191, 204)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 255, 255))},
-            Rotation = 90,
-            Parent = color
-        }
-    )
-    
-    local value = utility.new(
-        "TextLabel",
-        {
-            AnchorPoint = Vector2.new(0,0),
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1,-20,1,0),
-            Position = UDim2.new(0,5,0,0),
-            Font = self.library.font,
-            Text = def,
-            TextColor3 = Color3.fromRGB(255,255,255),
-            TextSize = self.library.textsize,
-            TextStrokeTransparency = 0,
-            TextXAlignment = "Left",
-            ClipsDescendants = true,
-            Parent = outline
-        }
-    )
-    
-    local indicator = utility.new(
-        "TextLabel",
-        {
-            AnchorPoint = Vector2.new(0.5,0),
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1,-10,1,0),
-            Position = UDim2.new(0.5,0,0,0),
-            Font = self.library.font,
-            Text = "+",
-            TextColor3 = Color3.fromRGB(255,255,255),
-            TextSize = self.library.textsize,
-            TextStrokeTransparency = 0,
-            TextXAlignment = "Right",
-            ClipsDescendants = true,
-            Parent = outline
-        }
-    )
-    
-    local title = utility.new(
-        "TextLabel",
-        {
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1,0,0,15),
-            Position = UDim2.new(0,0,0,0),
-            Font = self.library.font,
-            Text = name,
-            TextColor3 = Color3.fromRGB(255,255,255),
-            TextSize = self.library.textsize,
-            TextStrokeTransparency = 0,
-            TextXAlignment = "Left",
-            Parent = dropdownholder
-        }
-    )
-    
-    local dropdownbutton = utility.new(
-        "TextButton",
-        {
-            AnchorPoint = Vector2.new(0,0),
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1,0,1,0),
-            Position = UDim2.new(0,0,0,0),
-            Text = "",
-            Parent = dropdownholder
-        }
-    )
-    
-    local optionsholder = utility.new(
-        "Frame",
-        {
-            BackgroundTransparency = 1,
-            BorderColor3 = Color3.fromRGB(56, 56, 56),
-            BorderMode = "Inset",
-            BorderSizePixel = 1,
-            Size = UDim2.new(1,0,0,20),
-            Position = UDim2.new(0,0,0,34),
-            Visible = false,
-            Parent = dropdownholder
-        }
-    )
-    
-    local size = #options
-    size = math.clamp(size,1,max)
-    
-    local optionsoutline = utility.new(
-        "ScrollingFrame",
-        {
-            BackgroundColor3 = Color3.fromRGB(56, 56, 56),
-            BorderColor3 = Color3.fromRGB(56, 56, 56),
-            BorderMode = "Inset",
-            BorderSizePixel = 1,
-            Size = UDim2.new(1,0,size,2),
-            Position = UDim2.new(0,0,0,0),
-            ClipsDescendants = true,
-            CanvasSize = UDim2.new(0,0,0,18*#options),
-            ScrollBarImageTransparency = 0.25,
-            ScrollBarImageColor3 = Color3.fromRGB(0,0,0),
-            ScrollBarThickness = 8,
-            ScrollingEnabled = true,
-            VerticalScrollBarInset = "ScrollBar",
-            VerticalScrollBarPosition = "Right",
-            ZIndex = 5,
-            Parent = optionsholder
-        }
-    )
-    
-    utility.new(
-        "UIListLayout",
-        {
-            FillDirection = "Vertical",
-            Parent = optionsoutline
-        }
-    )
-
-    -- // dropdown tbl
-    dropdown = {
-        ["library"] = self.library,
-        ["optionsholder"] = optionsholder,
-        ["indicator"] = indicator,
-        ["options"] = options,
-        ["title"] = title,
-        ["value"] = value,
-        ["open"] = false,
-        ["titles"] = {},
-        ["current"] = def,
-        ["callback"] = callback,
-        ["optionsoutline"] = optionsoutline
-    }
-    
-    table.insert(dropdown.library.dropdowns,dropdown)
-    
-    for i,v in pairs(options) do
-        local ddoptionbutton = utility.new(
-            "TextButton",
-            {
-                AnchorPoint = Vector2.new(0,0),
-                BackgroundTransparency = 1,
-                Size = UDim2.new(1,0,0,18),
-                Text = "",
-                ZIndex = 6,
-                Parent = optionsoutline
-            }
-        )
-        
-        local ddoptiontitle = utility.new(
-            "TextLabel",
-            {
-                AnchorPoint = Vector2.new(0.5,0),
-                BackgroundTransparency = 1,
-                Size = UDim2.new(1,-10,1,0),
-                Position = UDim2.new(0.5,0,0,0),
-                Font = self.library.font,
-                Text = v,
-                TextColor3 = Color3.fromRGB(255,255,255),
-                TextSize = self.library.textsize,
-                TextStrokeTransparency = 0,
-                TextXAlignment = "Left",
-                ClipsDescendants = true,
-                ZIndex = 6,
-                Parent = ddoptionbutton
-            }
-        )
-        
-        self.library.labels[#self.library.labels+1] = ddoptiontitle
-        table.insert(dropdown.titles,ddoptiontitle)
-        
-        if v == dropdown.current then 
-            ddoptiontitle.TextColor3 = self.library.theme.accent 
-        end
-        
-        ddoptionbutton.MouseButton1Down:Connect(function()
-            optionsholder.Visible = false
-            dropdown.open = false
-            indicator.Text = "+"
-            for z,x in pairs(dropdown.titles) do
-                if x.TextColor3 == self.library.theme.accent then
-                    x.TextColor3 = Color3.fromRGB(255,255,255)
-                end
-            end
-            dropdown.current = v
-            dropdown.value.Text = v
-            ddoptiontitle.TextColor3 = self.library.theme.accent
-            table.insert(self.library.themeitems["accent"]["TextColor3"],ddoptiontitle)
-            dropdown.callback(v)
-        end)
-    end
-    
-    dropdownbutton.MouseButton1Down:Connect(function()
-        dropdown.library:closewindows(dropdown)
-        for i,v in pairs(dropdown.titles) do
-            if v.Text == dropdown.current then
-                v.TextColor3 = dropdown.library.theme.accent
-            else
-                v.TextColor3 = Color3.fromRGB(255,255,255)
-            end
-        end
-        optionsholder.Visible = not dropdown.open
-        dropdown.open = not dropdown.open
-        if dropdown.open then
-            indicator.Text = "-"
-        else
-            indicator.Text = "+"
-        end
-    end)
-    
-    -- Add methods to dropdown object
-    function dropdown:set(value)
-        if value ~= nil then
-            if table.find(self.options, value) then
-                self.current = tostring(value)
-                self.value.Text = tostring(value)
-                self.callback(tostring(value))
-                for z,x in pairs(self.titles) do
-                    if x.Text == value then
-                        x.TextColor3 = self.library.theme.accent
-                    else
-                        x.TextColor3 = Color3.fromRGB(255,255,255)
-                    end
-                end
-            end
-        end
-    end
-    
-    function dropdown:add(option)
-        if not table.find(self.options, option) then
-            table.insert(self.options, option)
-            
-            -- Update the scrolling frame canvas size
-            self.optionsoutline.CanvasSize = UDim2.new(0,0,0,18*#self.options)
-            
-            -- Create new option button
-            local ddoptionbutton = utility.new(
-                "TextButton",
-                {
-                    AnchorPoint = Vector2.new(0,0),
-                    BackgroundTransparency = 1,
-                    Size = UDim2.new(1,0,0,18),
-                    Text = "",
-                    ZIndex = 6,
-                    Parent = self.optionsoutline
-                }
-            )
-            
-            local ddoptiontitle = utility.new(
-                "TextLabel",
-                {
-                    AnchorPoint = Vector2.new(0.5,0),
-                    BackgroundTransparency = 1,
-                    Size = UDim2.new(1,-10,1,0),
-                    Position = UDim2.new(0.5,0,0,0),
-                    Font = self.library.font,
-                    Text = option,
-                    TextColor3 = Color3.fromRGB(255,255,255),
-                    TextSize = self.library.textsize,
-                    TextStrokeTransparency = 0,
-                    TextXAlignment = "Left",
-                    ClipsDescendants = true,
-                    ZIndex = 6,
-                    Parent = ddoptionbutton
-                }
-            )
-            
-            self.library.labels[#self.library.labels+1] = ddoptiontitle
-            table.insert(self.titles, ddoptiontitle)
-            
-            ddoptionbutton.MouseButton1Down:Connect(function()
-                self.optionsholder.Visible = false
-                self.open = false
-                self.indicator.Text = "+"
-                for z,x in pairs(self.titles) do
-                    if x.TextColor3 == self.library.theme.accent then
-                        x.TextColor3 = Color3.fromRGB(255,255,255)
-                    end
-                end
-                self.current = option
-                self.value.Text = option
-                ddoptiontitle.TextColor3 = self.library.theme.accent
-                table.insert(self.library.themeitems["accent"]["TextColor3"], ddoptiontitle)
-                self.callback(option)
-            end)
-        end
-    end
-    
-    local pointer = props.pointer or props.Pointer or props.pointername or props.Pointername or props.PointerName or props.pointerName or nil
-    
-    if pointer then
-        if self.pointers then
-            self.pointers[tostring(pointer)] = dropdown
-        end
-    end
-    
-    self.library.labels[#self.library.labels+1] = title
-    self.library.labels[#self.library.labels+1] = value
-    
-    setmetatable(dropdown, dropdowns)
-    return dropdown
+	-- // properties
+	local name = props.name or props.Name or props.page or props.Page or props.pagename or props.Pagename or props.PageName or props.pageName or "new ui"
+	local def = props.def or props.Def or props.default or props.Default or ""
+	local max = props.max or props.Max or props.maximum or props.Maximum or 4
+	local options = props.options or props.Options or props.Settings or props.settings or {}
+	local callback = props.callback or props.callBack or props.CallBack or props.Callback or function()end
+	-- // variables
+	local dropdown = {}
+	-- // main
+	local dropdownholder = utility.new(
+		"Frame",
+		{
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1,0,0,35),
+			ZIndex = 2,
+			Parent = self.content
+		}
+	)
+	--
+	local outline = utility.new(
+		"Frame",
+		{
+			BackgroundColor3 = Color3.fromRGB(24, 24, 24),
+			BorderColor3 = Color3.fromRGB(12, 12, 12),
+			BorderMode = "Inset",
+			BorderSizePixel = 1,
+			Size = UDim2.new(1,0,0,20),
+			Position = UDim2.new(0,0,0,15),
+			Parent = dropdownholder
+		}
+	)
+	--
+	local outline2 = utility.new(
+		"Frame",
+		{
+			BackgroundColor3 = Color3.fromRGB(24, 24, 24),
+			BorderColor3 = Color3.fromRGB(56, 56, 56),
+			BorderMode = "Inset",
+			BorderSizePixel = 1,
+			Size = UDim2.new(1,0,1,0),
+			Position = UDim2.new(0,0,0,0),
+			Parent = outline
+		}
+	)
+	--
+	local color = utility.new(
+		"Frame",
+		{
+			BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+			BorderSizePixel = 0,
+			Size = UDim2.new(1,0,1,0),
+			Position = UDim2.new(0,0,0,0),
+			Parent = outline2
+		}
+	)
+	--
+	utility.new(
+		"UIGradient",
+		{
+			Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(199, 191, 204)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 255, 255))},
+			Rotation = 90,
+			Parent = color
+		}
+	)
+	--
+	local value = utility.new(
+		"TextLabel",
+		{
+			AnchorPoint = Vector2.new(0,0),
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1,-20,1,0),
+			Position = UDim2.new(0,5,0,0),
+			Font = self.library.font,
+			Text = def,
+			TextColor3 = Color3.fromRGB(255,255,255),
+			TextSize = self.library.textsize,
+			TextStrokeTransparency = 0,
+			TextXAlignment = "Left",
+			ClipsDescendants = true,
+			Parent = outline
+		}
+	)
+	--
+	local indicator = utility.new(
+		"TextLabel",
+		{
+			AnchorPoint = Vector2.new(0.5,0),
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1,-10,1,0),
+			Position = UDim2.new(0.5,0,0,0),
+			Font = self.library.font,
+			Text = "+",
+			TextColor3 = Color3.fromRGB(255,255,255),
+			TextSize = self.library.textsize,
+			TextStrokeTransparency = 0,
+			TextXAlignment = "Right",
+			ClipsDescendants = true,
+			Parent = outline
+		}
+	)
+	--
+	local title = utility.new(
+		"TextLabel",
+		{
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1,0,0,15),
+			Position = UDim2.new(0,0,0,0),
+			Font = self.library.font,
+			Text = name,
+			TextColor3 = Color3.fromRGB(255,255,255),
+			TextSize = self.library.textsize,
+			TextStrokeTransparency = 0,
+			TextXAlignment = "Left",
+			Parent = dropdownholder
+		}
+	)
+	--
+	local dropdownbutton = utility.new(
+		"TextButton",
+		{
+			AnchorPoint = Vector2.new(0,0),
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1,0,1,0),
+			Position = UDim2.new(0,0,0,0),
+			Text = "",
+			Parent = dropdownholder
+		}
+	)
+	--
+	local optionsholder = utility.new(
+		"Frame",
+		{
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(56, 56, 56),
+			BorderMode = "Inset",
+			BorderSizePixel = 1,
+			Size = UDim2.new(1,0,0,20),
+			Position = UDim2.new(0,0,0,34),
+			Visible = false,
+			Parent = dropdownholder
+		}
+	)
+	--
+	local size = #options
+	--
+	size = math.clamp(size,1,max)
+	--
+	local optionsoutline = utility.new(
+		"ScrollingFrame",
+		{
+			BackgroundColor3 = Color3.fromRGB(56, 56, 56),
+			BorderColor3 = Color3.fromRGB(56, 56, 56),
+			BorderMode = "Inset",
+			BorderSizePixel = 1,
+			Size = UDim2.new(1,0,size,2),
+			Position = UDim2.new(0,0,0,0),
+			ClipsDescendants = true,
+			CanvasSize = UDim2.new(0,0,0,18*#options),
+			ScrollBarImageTransparency = 0.25,
+			ScrollBarImageColor3 = Color3.fromRGB(0,0,0),
+			ScrollBarThickness = 5,
+			VerticalScrollBarInset = "ScrollBar",
+			VerticalScrollBarPosition = "Right",
+			ZIndex = 5,
+			Parent = optionsholder
+		}
+	)
+	--
+	utility.new(
+		"UIListLayout",
+		{
+			FillDirection = "Vertical",
+			Parent = optionsoutline
+		}
+	)
+	-- // dropdown tbl
+	dropdown = {
+		["library"] = self.library,
+		["optionsholder"] = optionsholder,
+		["indicator"] = indicator,
+		["options"] = options,
+		["title"] = title,
+		["value"] = value,
+		["open"] = false,
+		["titles"] = {},
+		["current"] = def,
+		["callback"] = callback
+	}
+	--
+	table.insert(dropdown.library.dropdowns,dropdown)
+	--
+	for i,v in pairs(options) do
+		local ddoptionbutton = utility.new(
+			"TextButton",
+			{
+				AnchorPoint = Vector2.new(0,0),
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1,0,0,18),
+				Text = "",
+				ZIndex = 6,
+				Parent = optionsoutline
+			}
+		)
+		--
+		local ddoptiontitle = utility.new(
+			"TextLabel",
+			{
+				AnchorPoint = Vector2.new(0.5,0),
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1,-10,1,0),
+				Position = UDim2.new(0.5,0,0,0),
+				Font = self.library.font,
+				Text = v,
+				TextColor3 = Color3.fromRGB(255,255,255),
+				TextSize = self.library.textsize,
+				TextStrokeTransparency = 0,
+				TextXAlignment = "Left",
+				ClipsDescendants = true,
+				ZIndex = 6,
+				Parent = ddoptionbutton
+			}
+		)
+		--
+		self.library.labels[#self.library.labels+1] = ddoptiontitle
+		--
+		table.insert(dropdown.titles,ddoptiontitle)
+		--
+		if v == dropdown.current then ddoptiontitle.TextColor3 = self.library.theme.accent end
+		--
+		ddoptionbutton.MouseButton1Down:Connect(function()
+			optionsholder.Visible = false
+			dropdown.open = false
+			indicator.Text = "+"
+			for z,x in pairs(dropdown.titles) do
+				if x.TextColor3 == self.library.theme.accent then
+					x.TextColor3 = Color3.fromRGB(255,255,255)
+				end
+			end
+			dropdown.current = v
+			dropdown.value.Text = v
+			ddoptiontitle.TextColor3 = self.library.theme.accent
+			table.insert(self.library.themeitems["accent"]["TextColor3"],ddoptiontitle)
+			dropdown.callback(v)
+		end)
+	end
+	--
+	dropdownbutton.MouseButton1Down:Connect(function()
+		dropdown.library:closewindows(dropdown)
+		for i,v in pairs(dropdown.titles) do
+			if v.Text == dropdown.current then
+				v.TextColor3 = dropdown.library.theme.accent
+			else
+				v.TextColor3 = Color3.fromRGB(255,255,255)
+			end
+		end
+		optionsholder.Visible = not dropdown.open
+		dropdown.open = not dropdown.open
+		if dropdown.open then
+			indicator.Text = "-"
+		else
+			indicator.Text = "+"
+		end
+	end)
+	--
+	local pointer = props.pointer or props.Pointer or props.pointername or props.Pointername or props.PointerName or props.pointerName or nil
+	--
+	if pointer then
+		if self.pointers then
+			self.pointers[tostring(pointer)] = dropdown
+		end
+	end
+	--
+	self.library.labels[#self.library.labels+1] = title
+	self.library.labels[#self.library.labels+1] = value
+	-- // metatable indexing + return
+	setmetatable(dropdown, dropdowns)
+	return dropdown
 end
 --
 function sections:buttonbox(props)
