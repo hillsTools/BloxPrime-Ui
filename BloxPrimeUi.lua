@@ -16,6 +16,101 @@ local colorpickers = {}
 local configloaders = {}
 local watermarks = {}
 local loaders = {}
+-- First, create a labels table for the metatable
+local labels = {}
+labels.__index = labels
+
+-- Then add the label function to the sections metatable
+function sections:label(props)
+    -- // properties
+    local text = props.text or props.Text or props.label or props.Label or "New Label"
+    local centered = props.center or props.Center or props.centered or props.Centered or false
+    local pointer = props.pointer or props.Pointer or props.pointername or props.Pointername or props.PointerName or props.pointerName or nil
+    
+    -- // variables
+    local label = {}
+    
+    -- // main
+    local labelholder = utility.new(
+        "Frame",
+        {
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 0, 20),
+            Parent = self.content
+        }
+    )
+    
+    local textlabel = utility.new(
+        "TextLabel",
+        {
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, -10, 1, 0),
+            Position = UDim2.new(0.5, 0, 0, 0),
+            AnchorPoint = Vector2.new(0.5, 0),
+            Font = self.library.font,
+            Text = text,
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            TextSize = self.library.textsize,
+            TextStrokeTransparency = 0,
+            TextXAlignment = centered and "Center" or "Left",
+            TextWrapped = true,
+            Parent = labelholder
+        }
+    )
+    
+    -- // label tbl
+    label = {
+        ["library"] = self.library,
+        ["textlabel"] = textlabel,
+        ["holder"] = labelholder
+    }
+    
+    -- Add pointer if specified
+    if pointer then
+        if self.pointers then
+            self.pointers[tostring(pointer)] = label
+        end
+    end
+    
+    self.library.labels[#self.library.labels + 1] = textlabel
+    
+    -- // metatable indexing + return
+    setmetatable(label, labels)
+    return label
+end
+
+-- Now add methods to the labels metatable
+function labels:set(text)
+    if text ~= nil then
+        self.textlabel.Text = tostring(text)
+    end
+    return self
+end
+
+function labels:setcolor(color)
+    if color then
+        self.textlabel.TextColor3 = color
+    end
+    return self
+end
+
+function labels:setalignment(align)
+    if align == "center" then
+        self.textlabel.TextXAlignment = "Center"
+    elseif align == "left" then
+        self.textlabel.TextXAlignment = "Left"
+    elseif align == "right" then
+        self.textlabel.TextXAlignment = "Right"
+    end
+    return self
+end
+
+function labels:setvisible(bool)
+    if bool ~= nil then
+        self.holder.Visible = bool
+    end
+    return self
+end
 --
 local utility = {}
 --
